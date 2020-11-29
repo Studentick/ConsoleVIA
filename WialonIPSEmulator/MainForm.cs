@@ -61,8 +61,8 @@ namespace WialonIPSEmulator
         static int dut_selected = 0;
         static string dut_data = "";
         public static int? message_status = null;
-        static int request_time = 5000;
-        static int time_to_dut_read = 2000;
+        static int request_time = 25000;
+        static int time_to_dut_read = 15000;
         public const int MSG_SUCCESS = 1, MSG_FAIL = 0, MSG_DROP = -1, PORT_DROP = -2;
         const string FAIL_VALUE = "65536" /*Не верный формат данных*/, DROP_VALUE = "65533" /*Часть данных была потеряна*/,
             PORT_VALUE = "65530" /*Ошибка COM-порта*/;
@@ -104,8 +104,8 @@ namespace WialonIPSEmulator
             Dutyara.GetPorts();
             dut_list.Add(new Dutyara(33722, 9600));
             dut_list.Add(new Dutyara(22733, 9600));
-            mmcc = _mc;
-            DutControl(_mc);
+            //mmcc = _mc;
+            //DutControl(_mc);
             
         }
 
@@ -990,6 +990,77 @@ namespace WialonIPSEmulator
             SendDutData("ee", ref _mc);
         }
 
+        private void tmrDutControl_Tick(object sender, EventArgs e)
+        {
+            need_request = true;
+            while (need_request)
+            {
+                // Console.WriteLine(sw.ElapsedMilliseconds);
+                if (Dutyara.opened)
+                {
+                    sw_timeout.Restart();
+                    Dutyara.opened = false;
+                    dut_list[dut_selected].GetData();
+                    dut_list[dut_selected].SendMsg();
+                    //GetAnsver();
+                }
+                else
+
+                //if (!Dutyara.opened)
+                {
+                    //dut_data = "44N0=+210=01345.27=00632.55=094";
+                    if (dut_data != "")
+                    {
+                        CheckData(dut_data);
+                    }
+                    // Так должно быть лучше, но нужно проверит, а на это нет времени:
+                    else
+                    if (sw_timeout.ElapsedMilliseconds > time_to_dut_read)
+                    {
+                        message_status = MSG_FAIL;
+                    }
+
+                    switch (message_status)
+                    {
+                        case MSG_FAIL:
+                            dut_list[dut_selected].msg_cont.id = dut_list[dut_selected].Id.ToString();
+                            dut_list[dut_selected].msg_cont.water = FAIL_VALUE;
+                            dut_list[dut_selected].msg_cont.fuel = FAIL_VALUE;
+                            dut_list[dut_selected].msg_cont.temp = FAIL_VALUE;
+                            //dut_data = "44N0=65536=65536=65536=094";
+                            break;
+                        case MSG_DROP:
+                            dut_list[dut_selected].msg_cont.id = dut_list[dut_selected].Id.ToString();
+                            dut_list[dut_selected].msg_cont.water = DROP_VALUE;
+                            dut_list[dut_selected].msg_cont.fuel = DROP_VALUE;
+                            dut_list[dut_selected].msg_cont.temp = DROP_VALUE;
+                            break;
+                        case PORT_DROP:
+                            dut_list[dut_selected].msg_cont.id = dut_list[dut_selected].Id.ToString();
+                            dut_list[dut_selected].msg_cont.water = PORT_VALUE;
+                            dut_list[dut_selected].msg_cont.fuel = PORT_VALUE;
+                            dut_list[dut_selected].msg_cont.temp = PORT_VALUE;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (message_status != null)
+                    {
+                        //if (message_status != MSG_SUCCESS)
+                        dut_data = dut_list[dut_selected].msg_cont.id + "N0=" + dut_list[dut_selected].msg_cont.temp + "=" +
+                                        dut_list[dut_selected].msg_cont.fuel + "=" + dut_list[dut_selected].msg_cont.water + "=094"; //"44N0=65536=65536=65536=094";
+                        Console.WriteLine(dut_data);
+
+                        GoToNextDut(ref _mc);
+                    }
+                    else dut_data = dut_list[dut_selected].GetData();
+                    Thread.Sleep(50);
+                }
+
+            }
+        }
+
         async static void DutControl(MessagesCommunicator _mmc)
         {
             await Task.Run(() =>
@@ -1063,14 +1134,7 @@ namespace WialonIPSEmulator
                             else dut_data = dut_list[dut_selected].GetData();
                             Thread.Sleep(50);
                         }
-
-
-
-
-                        // Если таймер больше Х то меняется номер дута и открываем opened 
-                        //          Если у нового дута другая скорость меняем текущую скорость
-
-
+                        
                     }
                     if (sw_request.ElapsedMilliseconds > request_time)
                     {
@@ -1190,7 +1254,8 @@ namespace WialonIPSEmulator
 
         static void SendDutData(string ips_params, ref MessagesCommunicator _mmc)
         {
-            bool gg = false;
+            bool gg = true;
+            // Тут работа кипит
             string t_msg = "#D#171120;164227;;;;;;;;;;;;;;";
             t_msg += ips_params;
             //var text = this.tbSendRaw.Text.Trim();
@@ -1201,7 +1266,7 @@ namespace WialonIPSEmulator
                 var msg = WialonIPS.Message.Parse(t_msg);
                 if (msg.Success)
                 {
-                    mmcc.Send(msg);
+                    _mmc.Send(msg);
                     MessageBox.Show(t_msg);
                 }
                 else
@@ -1213,6 +1278,17 @@ namespace WialonIPSEmulator
             
         }
 
+        // Получение текущей даты для пакетов.
+        static List<string> MyParseDateTime(DateTime dt)
+        {
+            List<string> list_dt = new List<string>();
+            var dd = dt.ToString("d").Replace(".", "");
+            dd = dd.Substring(0, 4) + dd.Substring(6, 2);
+            var tt = dt.ToString("T").Replace(":", "");
+            list_dt.Add(dd);
+            list_dt.Add(tt);
+            return list_dt;
+        }
 
 
         // =========================================================================================================

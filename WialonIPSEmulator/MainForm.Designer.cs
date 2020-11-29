@@ -89,6 +89,7 @@
             this.tbLat = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.btnOnOffRequest = new System.Windows.Forms.Button();
             this.btnVirtDut = new System.Windows.Forms.Button();
             this.label13 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
@@ -110,7 +111,7 @@
             this.tmrAutoSend = new System.Windows.Forms.Timer(this.components);
             this.dlgOpenImage = new System.Windows.Forms.OpenFileDialog();
             this.tmrVirtDut = new System.Windows.Forms.Timer(this.components);
-            this.btnOnOffRequest = new System.Windows.Forms.Button();
+            this.tmrDutControl = new System.Windows.Forms.Timer(this.components);
             this.gbConnection.SuspendLayout();
             this.tabMain.SuspendLayout();
             this.tabLog.SuspendLayout();
@@ -796,6 +797,16 @@
             this.tabPage1.Text = "Вирт ДУТ";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // btnOnOffRequest
+            // 
+            this.btnOnOffRequest.Location = new System.Drawing.Point(126, 92);
+            this.btnOnOffRequest.Name = "btnOnOffRequest";
+            this.btnOnOffRequest.Size = new System.Drawing.Size(136, 82);
+            this.btnOnOffRequest.TabIndex = 9;
+            this.btnOnOffRequest.Text = "Включить/Выключить";
+            this.btnOnOffRequest.UseVisualStyleBackColor = true;
+            this.btnOnOffRequest.Click += new System.EventHandler(this.btnOnOffRequest_Click);
+            // 
             // btnVirtDut
             // 
             this.btnVirtDut.Location = new System.Drawing.Point(11, 92);
@@ -954,15 +965,11 @@
             this.tmrVirtDut.Interval = 1000;
             this.tmrVirtDut.Tick += new System.EventHandler(this.tmrVirtDut_Tick);
             // 
-            // btnOnOffRequest
+            // tmrDutControl
             // 
-            this.btnOnOffRequest.Location = new System.Drawing.Point(126, 92);
-            this.btnOnOffRequest.Name = "btnOnOffRequest";
-            this.btnOnOffRequest.Size = new System.Drawing.Size(136, 82);
-            this.btnOnOffRequest.TabIndex = 9;
-            this.btnOnOffRequest.Text = "Включить/Выключить";
-            this.btnOnOffRequest.UseVisualStyleBackColor = true;
-            this.btnOnOffRequest.Click += new System.EventHandler(this.btnOnOffRequest_Click);
+            this.tmrDutControl.Enabled = true;
+            this.tmrDutControl.Interval = 30000;
+            this.tmrDutControl.Tick += new System.EventHandler(this.tmrDutControl_Tick);
             // 
             // MainForm
             // 
@@ -1092,6 +1099,7 @@
         private System.Windows.Forms.Timer tmrVirtDut;
         private System.Windows.Forms.Button btnVirtDut;
         private System.Windows.Forms.Button btnOnOffRequest;
+        private System.Windows.Forms.Timer tmrDutControl;
     }
 }
 

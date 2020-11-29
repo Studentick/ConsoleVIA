@@ -9,6 +9,7 @@ using System.Xml.Serialization;
 using WialonIPS;
 using System.IO;
 using System.Threading;
+using System.Diagnostics;
 
 namespace WialonIPSEmulator
 {
@@ -48,6 +49,15 @@ namespace WialonIPSEmulator
         public AddToTextBoxDelegate AddToLog, AddToMessages;
         public CLog Log;
         public CSettings Settings { get; private set; }
+        // =========================================================================================================
+        // Для ДУТа
+        static Stopwatch sw_request = new Stopwatch(); // Для проверки необходимости повторного опроса ДУТов
+        static bool need_request = true;
+
+
+
+
+
         // =========================================================================================================
         public MainForm()
         {
@@ -937,6 +947,18 @@ namespace WialonIPSEmulator
                 _auto_virt = Convert.ToInt32(textBox1.Text);
                 SendMyData();
             }
+        }
+
+        private void DutControl_Tick(object sender, EventArgs e)
+        {
+            sw_request.Start();
+
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            DutControl_Tick(sender, e);
         }
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)

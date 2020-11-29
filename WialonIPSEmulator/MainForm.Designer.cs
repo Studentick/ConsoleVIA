@@ -87,6 +87,7 @@
             this.tbLat = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.btnVirtDut = new System.Windows.Forms.Button();
             this.label13 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
@@ -107,7 +108,6 @@
             this.tmrAutoSend = new System.Windows.Forms.Timer(this.components);
             this.dlgOpenImage = new System.Windows.Forms.OpenFileDialog();
             this.tmrVirtDut = new System.Windows.Forms.Timer(this.components);
-            this.btnVirtDut = new System.Windows.Forms.Button();
             this.ioOutputs = new WialonIPSEmulator.IOPanel();
             this.ioInputs = new WialonIPSEmulator.IOPanel();
             this.gbConnection.SuspendLayout();
@@ -772,6 +772,16 @@
             this.tabPage1.Text = "Вирт ДУТ";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // btnVirtDut
+            // 
+            this.btnVirtDut.Location = new System.Drawing.Point(11, 95);
+            this.btnVirtDut.Name = "btnVirtDut";
+            this.btnVirtDut.Size = new System.Drawing.Size(106, 82);
+            this.btnVirtDut.TabIndex = 8;
+            this.btnVirtDut.Text = "Включит вещание";
+            this.btnVirtDut.UseVisualStyleBackColor = true;
+            this.btnVirtDut.Click += new System.EventHandler(this.btnVirtDut_Click);
+            // 
             // label13
             // 
             this.label13.AutoSize = true;
@@ -919,16 +929,6 @@
             // 
             this.tmrVirtDut.Interval = 1000;
             this.tmrVirtDut.Tick += new System.EventHandler(this.tmrVirtDut_Tick);
-            // 
-            // btnVirtDut
-            // 
-            this.btnVirtDut.Location = new System.Drawing.Point(240, 104);
-            this.btnVirtDut.Name = "btnVirtDut";
-            this.btnVirtDut.Size = new System.Drawing.Size(106, 82);
-            this.btnVirtDut.TabIndex = 8;
-            this.btnVirtDut.Text = "Включит вещание";
-            this.btnVirtDut.UseVisualStyleBackColor = true;
-            this.btnVirtDut.Click += new System.EventHandler(this.btnVirtDut_Click);
             // 
             // ioOutputs
             // 

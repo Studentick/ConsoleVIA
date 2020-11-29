@@ -9,7 +9,6 @@ using System.Xml.Serialization;
 using WialonIPS;
 using System.IO;
 using System.Threading;
-using System.Diagnostics;
 
 namespace WialonIPSEmulator
 {
@@ -49,28 +48,10 @@ namespace WialonIPSEmulator
         public AddToTextBoxDelegate AddToLog, AddToMessages;
         public CLog Log;
         public CSettings Settings { get; private set; }
-
-        //==================================================================
-        // Переменные, отвечающие за работу с ком-портом
-        //==================================================================
-        static int dut_selected = 0;
-        static List<Dutyara> dut_list = new List<Dutyara>();
-        static Stopwatch sw_timeout = new Stopwatch(); // Для проверки потраченного времени на опрос ДУТа
-                static string dut_data = "";
-        // Дремя, которое даётся дуту на то чтобы дать ответ
-        static int time_to_dut_read = 7500;
-        static int? message_status = null;
-        const int MSG_SUCCESS = 1, MSG_FAIL = 0, MSG_DROP = -1;
-        const string FAIL_VALUE = "65536" /*Не верный формат данных*/, DROP_VALUE = "65533" /*Часть данных была потеряна*/,
-            PORT_VALUE = "65530" /*Ошибка COM-порта*/;
-
         // =========================================================================================================
         public MainForm()
         {
             InitializeComponent();
-            Dutyara.GetPorts(this);
-            dut_list.Add(new Dutyara(33722, 9600));
-            dut_list.Add(new Dutyara(22733, 9600));
             this.AddToLog = new AddToTextBoxDelegate(this.AddToLogMethod);
             this.AddToMessages = new AddToTextBoxDelegate(this.AddToMessagesMethod);
             this.Log = new CLog(this.tbLog, this.AddToLog);
@@ -958,87 +939,6 @@ namespace WialonIPSEmulator
             }
         }
 
-        private void btnRequestOnOff_Click(object sender, EventArgs e)
-        {
-            if (!tmrRequest.Enabled)
-            {
-                tmrRequest.Start();
-                btnRequestOnOff.Text = "Остановить";
-
-            }
-            else
-            {
-                tmrRequest.Stop();
-                btnRequestOnOff.Text = "Запустить";
-            }
-        }
-
-        private void tmrRequest_Tick(object sender, EventArgs e)
-        {
-            try
-            {
-                if (Dutyara.opened)
-                {
-                    sw_timeout.Restart();
-                    Dutyara.opened = false;
-                    dut_list[dut_selected].GetData();
-                    dut_list[dut_selected].SendMsg();
-                    //GetAnsver();
-                }
-                else
-
-                //if (!Dutyara.opened)
-                {
-                    //dut_data = "44N0=+210=01345.27=00632.55=094";
-                    if (dut_data != "")
-                    {
-                        CheckData(dut_data);
-                    }
-                    // Так должно быть лучше, но нужно проверит, а на это нет времени:
-                    else
-                    if (sw_timeout.ElapsedMilliseconds > time_to_dut_read)
-                    {
-                        message_status = MSG_FAIL;
-                    }
-
-                    switch (message_status)
-                    {
-                        case MSG_FAIL:
-                            dut_list[dut_selected].msg_cont.id = dut_list[dut_selected].Id.ToString();
-                            dut_list[dut_selected].msg_cont.water = FAIL_VALUE;
-                            dut_list[dut_selected].msg_cont.fuel = FAIL_VALUE;
-                            dut_list[dut_selected].msg_cont.temp = FAIL_VALUE;
-                            //dut_data = "44N0=65536=65536=65536=094";
-                            break;
-                        case MSG_DROP:
-                            dut_list[dut_selected].msg_cont.id = dut_list[dut_selected].Id.ToString();
-                            dut_list[dut_selected].msg_cont.water = DROP_VALUE;
-                            dut_list[dut_selected].msg_cont.fuel = DROP_VALUE;
-                            dut_list[dut_selected].msg_cont.temp = DROP_VALUE;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    if (message_status != null)
-                    {
-                        //if (message_status != MSG_SUCCESS)
-                        dut_data = dut_list[dut_selected].msg_cont.id + "N0=" + dut_list[dut_selected].msg_cont.temp + "=" +
-                                        dut_list[dut_selected].msg_cont.fuel + "=" + dut_list[dut_selected].msg_cont.water + "=094"; //"44N0=65536=65536=65536=094";
-                        Console.WriteLine(dut_data);
-
-                        GoToNextDut();
-                    }
-                    else dut_data = dut_list[dut_selected].GetData();
-                    Thread.Sleep(500);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             new SettingsForm(this.Settings).ShowDialog();
@@ -1063,98 +963,6 @@ namespace WialonIPSEmulator
         	this.tbIButton.Enabled = this.cbiButtonEnabled.Checked;
         	this.UpdateDataPacketText(DateTime.Now.ToUniversalTime());
         }
-        // Перейти к опросу следующего ДУТа 
-        static void GoToNextDut()
-        {
-            Dutyara.need_a_stop = true;
-            Dutyara.opened = true;
-            dut_data = "";
-            dut_selected = (dut_selected + 1);
-            if (dut_selected >= dut_list.Count)
-            {
-                // need_request = false;
-                dut_selected %= dut_list.Count;
-                SendToVialon();
-            }
-            message_status = null;
-        }
-
-        private static void SendToVialon()
-        {
-            string params_string = String.Empty;
-            int dl_len = dut_list.Count;
-            Dutyara counter;
-            for (int iterator = 0; iterator < dl_len; iterator++)
-            {
-                counter = dut_list[iterator];
-                params_string += ViaDataFormater.GenerateString(counter, iterator);
-            }
-            params_string = params_string.Remove(params_string.Length - 1);
-
-            MessageBox.Show(params_string, "MessageToVialon");
-            //Console.WriteLine(params_string);
-        }
-
-        private static void CheckData(string input_text)
-        {
-            string[] dut_data_arr = input_text.Split('=');
-            int arr_len = dut_data_arr.Length;
-            if (arr_len != 5)
-            {
-                message_status = MSG_DROP;
-            }
-            else
-            {
-                // Проверяем является ли айдишник числом
-                string dut_id = dut_data_arr[0].Substring(0, dut_data_arr[0].Length - 2);
-                // dut_id = dut_id.Substring(1, dut_id.Length-2);
-                float i = 0;
-                var bb = float.TryParse(dut_id, out i);
-                if (!bb)
-                {
-                    message_status = MSG_DROP; return;
-                }
-                if (dut_data_arr[1][0] != '+' && dut_data_arr[1][0] != '-')
-                {
-                    message_status = MSG_DROP; return;
-                }
-                bb = float.TryParse(dut_data_arr[2].Replace(".", ","), out i);
-                if (!bb)
-                {
-                    message_status = MSG_DROP; return;
-                }
-                bb = float.TryParse(dut_data_arr[3].Replace(".", ","), out i);
-                if (!bb)
-                {
-                    message_status = MSG_DROP; return;
-                }
-                // Если айдишник отличается от запрашиваемого - данные считаются битыми, т.к. пришли от другого ДУТа
-                var idish = dut_list[dut_selected].Id.ToString();
-                if (dut_id != idish)
-                {
-                    message_status = MSG_DROP; Console.WriteLine("Err!"); return;
-                    // Альтернативный способ решения: 
-                    //message_status = null; return;
-                }
-                // ХЗ что хз зачем, но вдроуг пригодится
-                //bb = float.TryParse(dut_data_arr[4].Replace(".", ","), out i);
-                //if (!bb)
-                //{
-                //    message_status = MSG_DROP; return;
-                //}
-
-                message_status = MSG_SUCCESS;
-                dut_list[dut_selected].msg_cont.id = dut_id;
-                dut_list[dut_selected].msg_cont.fuel = ViaDataFormater.CorrectoinNull(dut_data_arr[2], dut_list[dut_selected].Corrector);
-                dut_list[dut_selected].msg_cont.water = ViaDataFormater.CorrectoinNull(dut_data_arr[3], dut_list[dut_selected].Corrector);
-                dut_list[dut_selected].msg_cont.temp = dut_data_arr[1];
-
-            }
-            return;
-        }
-
-
-
     }
 
     [XmlRoot("Settings")]

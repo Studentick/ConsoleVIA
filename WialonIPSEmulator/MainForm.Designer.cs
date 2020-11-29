@@ -87,8 +87,6 @@
             this.tbLat = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.btnRequestOnOff = new System.Windows.Forms.Button();
-            this.btnVirtDut = new System.Windows.Forms.Button();
             this.label13 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
@@ -109,7 +107,7 @@
             this.tmrAutoSend = new System.Windows.Forms.Timer(this.components);
             this.dlgOpenImage = new System.Windows.Forms.OpenFileDialog();
             this.tmrVirtDut = new System.Windows.Forms.Timer(this.components);
-            this.tmrRequest = new System.Windows.Forms.Timer(this.components);
+            this.btnVirtDut = new System.Windows.Forms.Button();
             this.ioOutputs = new WialonIPSEmulator.IOPanel();
             this.ioInputs = new WialonIPSEmulator.IOPanel();
             this.gbConnection.SuspendLayout();
@@ -758,7 +756,6 @@
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.btnRequestOnOff);
             this.tabPage1.Controls.Add(this.btnVirtDut);
             this.tabPage1.Controls.Add(this.label13);
             this.tabPage1.Controls.Add(this.textBox1);
@@ -774,26 +771,6 @@
             this.tabPage1.TabIndex = 3;
             this.tabPage1.Text = "Вирт ДУТ";
             this.tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // btnRequestOnOff
-            // 
-            this.btnRequestOnOff.Location = new System.Drawing.Point(150, 87);
-            this.btnRequestOnOff.Name = "btnRequestOnOff";
-            this.btnRequestOnOff.Size = new System.Drawing.Size(109, 82);
-            this.btnRequestOnOff.TabIndex = 9;
-            this.btnRequestOnOff.Text = "Остановить опрос";
-            this.btnRequestOnOff.UseVisualStyleBackColor = true;
-            this.btnRequestOnOff.Click += new System.EventHandler(this.btnRequestOnOff_Click);
-            // 
-            // btnVirtDut
-            // 
-            this.btnVirtDut.Location = new System.Drawing.Point(22, 87);
-            this.btnVirtDut.Name = "btnVirtDut";
-            this.btnVirtDut.Size = new System.Drawing.Size(106, 82);
-            this.btnVirtDut.TabIndex = 8;
-            this.btnVirtDut.Text = "Включит вещание";
-            this.btnVirtDut.UseVisualStyleBackColor = true;
-            this.btnVirtDut.Click += new System.EventHandler(this.btnVirtDut_Click);
             // 
             // label13
             // 
@@ -943,11 +920,15 @@
             this.tmrVirtDut.Interval = 1000;
             this.tmrVirtDut.Tick += new System.EventHandler(this.tmrVirtDut_Tick);
             // 
-            // tmrRequest
+            // btnVirtDut
             // 
-            this.tmrRequest.Enabled = true;
-            this.tmrRequest.Interval = 15000;
-            this.tmrRequest.Tick += new System.EventHandler(this.tmrRequest_Tick);
+            this.btnVirtDut.Location = new System.Drawing.Point(240, 104);
+            this.btnVirtDut.Name = "btnVirtDut";
+            this.btnVirtDut.Size = new System.Drawing.Size(106, 82);
+            this.btnVirtDut.TabIndex = 8;
+            this.btnVirtDut.Text = "Включит вещание";
+            this.btnVirtDut.UseVisualStyleBackColor = true;
+            this.btnVirtDut.Click += new System.EventHandler(this.btnVirtDut_Click);
             // 
             // ioOutputs
             // 
@@ -1098,8 +1079,6 @@
         private System.Windows.Forms.TextBox tbGas;
         private System.Windows.Forms.Timer tmrVirtDut;
         private System.Windows.Forms.Button btnVirtDut;
-        private System.Windows.Forms.Button btnRequestOnOff;
-        private System.Windows.Forms.Timer tmrRequest;
     }
 }
 

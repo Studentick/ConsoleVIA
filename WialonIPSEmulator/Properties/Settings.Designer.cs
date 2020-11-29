@@ -22,17 +22,5 @@ namespace WialonIPSEmulator.Properties {
                 return defaultInstance;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string def_port {
-            get {
-                return ((string)(this["def_port"]));
-            }
-            set {
-                this["def_port"] = value;
-            }
-        }
     }
 }

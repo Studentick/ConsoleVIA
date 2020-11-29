@@ -64,7 +64,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -85,7 +84,6 @@
     <Compile Include="DevicesConfigForm.Designer.cs">
       <DependentUpon>DevicesConfigForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Dutyara.cs" />
     <Compile Include="HasK.Data.cs" />
     <Compile Include="HasK.Net.cs" />
     <Compile Include="IOPanel.cs">
@@ -152,7 +150,6 @@
     <Compile Include="SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ViaDataFormater.cs" />
     <Compile Include="VirtualDUT.cs" />
     <Compile Include="WialonIPS.cs" />
   </ItemGroup>

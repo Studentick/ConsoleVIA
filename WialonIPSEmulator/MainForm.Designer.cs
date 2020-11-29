@@ -58,7 +58,9 @@
             this.btnEditCustomParams = new System.Windows.Forms.Button();
             this.btnADCsCount = new System.Windows.Forms.Button();
             this.labOutputs = new System.Windows.Forms.Label();
+            this.ioOutputs = new WialonIPSEmulator.IOPanel();
             this.labInputs = new System.Windows.Forms.Label();
+            this.ioInputs = new WialonIPSEmulator.IOPanel();
             this.tbIButton = new System.Windows.Forms.TextBox();
             this.tbHdop = new System.Windows.Forms.TextBox();
             this.label12 = new System.Windows.Forms.Label();
@@ -87,6 +89,7 @@
             this.tbLat = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.btnVirtDut = new System.Windows.Forms.Button();
             this.label13 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
@@ -107,9 +110,7 @@
             this.tmrAutoSend = new System.Windows.Forms.Timer(this.components);
             this.dlgOpenImage = new System.Windows.Forms.OpenFileDialog();
             this.tmrVirtDut = new System.Windows.Forms.Timer(this.components);
-            this.btnVirtDut = new System.Windows.Forms.Button();
-            this.ioOutputs = new WialonIPSEmulator.IOPanel();
-            this.ioInputs = new WialonIPSEmulator.IOPanel();
+            this.btnOnOffRequest = new System.Windows.Forms.Button();
             this.gbConnection.SuspendLayout();
             this.tabMain.SuspendLayout();
             this.tabLog.SuspendLayout();
@@ -448,6 +449,17 @@
             this.labOutputs.TabIndex = 25;
             this.labOutputs.Text = "Outputs:";
             // 
+            // ioOutputs
+            // 
+            this.ioOutputs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ioOutputs.Location = new System.Drawing.Point(8, 96);
+            this.ioOutputs.Name = "ioOutputs";
+            this.ioOutputs.Size = new System.Drawing.Size(580, 30);
+            this.ioOutputs.TabIndex = 24;
+            this.ioOutputs.Value = ((uint)(0u));
+            this.ioOutputs.OnChange += new System.EventHandler(this.UpdateCurrentPacketDataHandler);
+            // 
             // labInputs
             // 
             this.labInputs.AutoSize = true;
@@ -456,6 +468,17 @@
             this.labInputs.Size = new System.Drawing.Size(39, 13);
             this.labInputs.TabIndex = 23;
             this.labInputs.Text = "Inputs:";
+            // 
+            // ioInputs
+            // 
+            this.ioInputs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ioInputs.Location = new System.Drawing.Point(8, 47);
+            this.ioInputs.Name = "ioInputs";
+            this.ioInputs.Size = new System.Drawing.Size(580, 30);
+            this.ioInputs.TabIndex = 22;
+            this.ioInputs.Value = ((uint)(0u));
+            this.ioInputs.OnChange += new System.EventHandler(this.UpdateCurrentPacketDataHandler);
             // 
             // tbIButton
             // 
@@ -756,6 +779,7 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.btnOnOffRequest);
             this.tabPage1.Controls.Add(this.btnVirtDut);
             this.tabPage1.Controls.Add(this.label13);
             this.tabPage1.Controls.Add(this.textBox1);
@@ -771,6 +795,16 @@
             this.tabPage1.TabIndex = 3;
             this.tabPage1.Text = "Вирт ДУТ";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // btnVirtDut
+            // 
+            this.btnVirtDut.Location = new System.Drawing.Point(11, 92);
+            this.btnVirtDut.Name = "btnVirtDut";
+            this.btnVirtDut.Size = new System.Drawing.Size(106, 82);
+            this.btnVirtDut.TabIndex = 8;
+            this.btnVirtDut.Text = "Включит вещание";
+            this.btnVirtDut.UseVisualStyleBackColor = true;
+            this.btnVirtDut.Click += new System.EventHandler(this.btnVirtDut_Click);
             // 
             // label13
             // 
@@ -920,37 +954,15 @@
             this.tmrVirtDut.Interval = 1000;
             this.tmrVirtDut.Tick += new System.EventHandler(this.tmrVirtDut_Tick);
             // 
-            // btnVirtDut
+            // btnOnOffRequest
             // 
-            this.btnVirtDut.Location = new System.Drawing.Point(240, 104);
-            this.btnVirtDut.Name = "btnVirtDut";
-            this.btnVirtDut.Size = new System.Drawing.Size(106, 82);
-            this.btnVirtDut.TabIndex = 8;
-            this.btnVirtDut.Text = "Включит вещание";
-            this.btnVirtDut.UseVisualStyleBackColor = true;
-            this.btnVirtDut.Click += new System.EventHandler(this.btnVirtDut_Click);
-            // 
-            // ioOutputs
-            // 
-            this.ioOutputs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ioOutputs.Location = new System.Drawing.Point(8, 96);
-            this.ioOutputs.Name = "ioOutputs";
-            this.ioOutputs.Size = new System.Drawing.Size(580, 30);
-            this.ioOutputs.TabIndex = 24;
-            this.ioOutputs.Value = ((uint)(0u));
-            this.ioOutputs.OnChange += new System.EventHandler(this.UpdateCurrentPacketDataHandler);
-            // 
-            // ioInputs
-            // 
-            this.ioInputs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ioInputs.Location = new System.Drawing.Point(8, 47);
-            this.ioInputs.Name = "ioInputs";
-            this.ioInputs.Size = new System.Drawing.Size(580, 30);
-            this.ioInputs.TabIndex = 22;
-            this.ioInputs.Value = ((uint)(0u));
-            this.ioInputs.OnChange += new System.EventHandler(this.UpdateCurrentPacketDataHandler);
+            this.btnOnOffRequest.Location = new System.Drawing.Point(126, 92);
+            this.btnOnOffRequest.Name = "btnOnOffRequest";
+            this.btnOnOffRequest.Size = new System.Drawing.Size(136, 82);
+            this.btnOnOffRequest.TabIndex = 9;
+            this.btnOnOffRequest.Text = "Включить/Выключить";
+            this.btnOnOffRequest.UseVisualStyleBackColor = true;
+            this.btnOnOffRequest.Click += new System.EventHandler(this.btnOnOffRequest_Click);
             // 
             // MainForm
             // 
@@ -1079,6 +1091,7 @@
         private System.Windows.Forms.TextBox tbGas;
         private System.Windows.Forms.Timer tmrVirtDut;
         private System.Windows.Forms.Button btnVirtDut;
+        private System.Windows.Forms.Button btnOnOffRequest;
     }
 }
 

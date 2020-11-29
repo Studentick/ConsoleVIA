@@ -9,6 +9,9 @@ using System.Xml.Serialization;
 using WialonIPS;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace WialonIPSEmulator
 {
@@ -44,10 +47,35 @@ namespace WialonIPSEmulator
         private DeviceInfo _selected_device;
 
         private MessagesCommunicator _mc = null;
+        public static MessagesCommunicator mmcc;
 
         public AddToTextBoxDelegate AddToLog, AddToMessages;
         public CLog Log;
         public CSettings Settings { get; private set; }
+        // =========================================================================================================
+        //Переменные для работы с дутами
+        static Stopwatch sw_timeout = new Stopwatch(); // Для проверки потраченного времени на опрос ДУТа
+        static Stopwatch sw_request = new Stopwatch(); // Для проверки необходимости повторного опроса ДУТов
+        static bool need_request = true;
+        static List<Dutyara> dut_list = new List<Dutyara>();
+        static int dut_selected = 0;
+        static string dut_data = "";
+        public static int? message_status = null;
+        static int request_time = 5000;
+        static int time_to_dut_read = 2000;
+        public const int MSG_SUCCESS = 1, MSG_FAIL = 0, MSG_DROP = -1, PORT_DROP = -2;
+        const string FAIL_VALUE = "65536" /*Не верный формат данных*/, DROP_VALUE = "65533" /*Часть данных была потеряна*/,
+            PORT_VALUE = "65530" /*Ошибка COM-порта*/;
+        private static bool stopped_request = false;
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool AllocConsole();
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool FreeConsole();
+
         // =========================================================================================================
         public MainForm()
         {
@@ -64,6 +92,21 @@ namespace WialonIPSEmulator
             this._settings_file_name = Path.Combine(base_path, ".wialon_ips_emulator.settings");
             this._log_file_name = Path.Combine(base_path, ".wialon_ips_emulator.log");
             this.tmrPing = new System.Threading.Timer(new TimerCallback(this.PingTimerCallback), null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+
+            if (AllocConsole())
+            {
+                Console.WriteLine("Программа стартанула");
+                
+            }
+
+            Console.WriteLine("Buka");
+
+            Dutyara.GetPorts();
+            dut_list.Add(new Dutyara(33722, 9600));
+            dut_list.Add(new Dutyara(22733, 9600));
+            mmcc = _mc;
+            DutControl(_mc);
+            
         }
 
         private void PingTimerCallback(object state)
@@ -938,6 +981,243 @@ namespace WialonIPSEmulator
                 SendMyData();
             }
         }
+
+
+        // =========================================================================================================
+        // Функции для работы сдутами
+        private void btnOnOffRequest_Click(object sender, EventArgs e)
+        {
+            SendDutData("ee", ref _mc);
+        }
+
+        async static void DutControl(MessagesCommunicator _mmc)
+        {
+            await Task.Run(() =>
+            {
+                sw_request.Start();
+                while (true)
+                {
+
+                    //bool tt = true;
+                    while (need_request)
+                    {
+                        // Console.WriteLine(sw.ElapsedMilliseconds);
+                        if (Dutyara.opened)
+                        {
+                            sw_timeout.Restart();
+                            Dutyara.opened = false;
+                            dut_list[dut_selected].GetData();
+                            dut_list[dut_selected].SendMsg();
+                            //GetAnsver();
+                        }
+                        else
+
+                        //if (!Dutyara.opened)
+                        {
+                            //dut_data = "44N0=+210=01345.27=00632.55=094";
+                            if (dut_data != "")
+                            {
+                                CheckData(dut_data);
+                            }
+                            // Так должно быть лучше, но нужно проверит, а на это нет времени:
+                            else
+                            if (sw_timeout.ElapsedMilliseconds > time_to_dut_read)
+                            {
+                                message_status = MSG_FAIL;
+                            }
+
+                            switch (message_status)
+                            {
+                                case MSG_FAIL:
+                                    dut_list[dut_selected].msg_cont.id = dut_list[dut_selected].Id.ToString();
+                                    dut_list[dut_selected].msg_cont.water = FAIL_VALUE;
+                                    dut_list[dut_selected].msg_cont.fuel = FAIL_VALUE;
+                                    dut_list[dut_selected].msg_cont.temp = FAIL_VALUE;
+                                    //dut_data = "44N0=65536=65536=65536=094";
+                                    break;
+                                case MSG_DROP:
+                                    dut_list[dut_selected].msg_cont.id = dut_list[dut_selected].Id.ToString();
+                                    dut_list[dut_selected].msg_cont.water = DROP_VALUE;
+                                    dut_list[dut_selected].msg_cont.fuel = DROP_VALUE;
+                                    dut_list[dut_selected].msg_cont.temp = DROP_VALUE;
+                                    break;
+                                case PORT_DROP:
+                                    dut_list[dut_selected].msg_cont.id = dut_list[dut_selected].Id.ToString();
+                                    dut_list[dut_selected].msg_cont.water = PORT_VALUE;
+                                    dut_list[dut_selected].msg_cont.fuel = PORT_VALUE;
+                                    dut_list[dut_selected].msg_cont.temp = PORT_VALUE;
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            if (message_status != null)
+                            {
+                                //if (message_status != MSG_SUCCESS)
+                                dut_data = dut_list[dut_selected].msg_cont.id + "N0=" + dut_list[dut_selected].msg_cont.temp + "=" +
+                                                dut_list[dut_selected].msg_cont.fuel + "=" + dut_list[dut_selected].msg_cont.water + "=094"; //"44N0=65536=65536=65536=094";
+                                Console.WriteLine(dut_data);
+
+                                GoToNextDut(ref mmcc);
+                            }
+                            else dut_data = dut_list[dut_selected].GetData();
+                            Thread.Sleep(50);
+                        }
+
+
+
+
+                        // Если таймер больше Х то меняется номер дута и открываем opened 
+                        //          Если у нового дута другая скорость меняем текущую скорость
+
+
+                    }
+                    if (sw_request.ElapsedMilliseconds > request_time)
+                    {
+                        if (!stopped_request)
+                        {
+                            need_request = true;
+                            sw_request.Restart();
+                        }
+                    }
+                }
+            }
+            );
+        }
+
+
+        // Проверка полученных данных от ДУТа
+        // в случае, если данные дошли в целосности - отправляет их получателю
+        // в случае если данные пришли в повреждённом виде - отправляем получателю соответствующий код ошибки
+        private static void CheckData(string input_text)
+        {
+            string[] dut_data_arr = input_text.Split('=');
+            int arr_len = dut_data_arr.Length;
+            if (arr_len != 5)
+            {
+                message_status = MSG_DROP;
+            }
+            else
+            {
+                // Проверяем является ли айдишник числом
+                string dut_id = dut_data_arr[0].Substring(0, dut_data_arr[0].Length - 2);
+                // dut_id = dut_id.Substring(1, dut_id.Length-2);
+                float i = 0;
+                var bb = float.TryParse(dut_id, out i);
+                if (!bb)
+                {
+                    message_status = MSG_DROP; return;
+                }
+                if (dut_data_arr[1][0] != '+' && dut_data_arr[1][0] != '-')
+                {
+                    message_status = MSG_DROP; return;
+                }
+                bb = float.TryParse(dut_data_arr[2].Replace(".", ","), out i);
+                if (!bb)
+                {
+                    message_status = MSG_DROP; return;
+                }
+                bb = float.TryParse(dut_data_arr[3].Replace(".", ","), out i);
+                if (!bb)
+                {
+                    message_status = MSG_DROP; return;
+                }
+                // Если айдишник отличается от запрашиваемого - данные считаются битыми, т.к. пришли от другого ДУТа
+                var idish = dut_list[dut_selected].Id.ToString();
+                if (dut_id != idish)
+                {
+                    message_status = MSG_DROP; Console.WriteLine("Err!"); return;
+                    // Альтернативный способ решения: 
+                    //message_status = null; return;
+
+
+                    //int irr = 0;
+                    //while (irr <= 25)
+                    //{
+                    //Console.WriteLine("Err!");
+                    //    irr++;
+                    //}
+                }
+                // ХЗ что хз зачем, но вдроуг пригодится
+                //bb = float.TryParse(dut_data_arr[4].Replace(".", ","), out i);
+                //if (!bb)
+                //{
+                //    message_status = MSG_DROP; return;
+                //}
+
+                message_status = MSG_SUCCESS;
+                dut_list[dut_selected].msg_cont.id = dut_id;
+                dut_list[dut_selected].msg_cont.fuel = ViaDataFormater.CorrectoinNull(dut_data_arr[2], dut_list[dut_selected].Corrector);
+                dut_list[dut_selected].msg_cont.water = ViaDataFormater.CorrectoinNull(dut_data_arr[3], dut_list[dut_selected].Corrector);
+                dut_list[dut_selected].msg_cont.temp = dut_data_arr[1];
+
+            }
+            return;
+        }
+
+        // Перейти к опросу следующего ДУТа 
+        static void GoToNextDut(ref MessagesCommunicator _mmc)
+        {
+            Dutyara.need_a_stop = true;
+            Dutyara.opened = true;
+            dut_data = "";
+            dut_selected = (dut_selected + 1);
+            if (dut_selected >= dut_list.Count)
+            {
+                // need_request = false;
+                dut_selected %= dut_list.Count;
+                SendToVialon(ref _mmc);
+                need_request = false;
+            }
+            message_status = null;
+        }
+
+        private static void SendToVialon(ref MessagesCommunicator _mmc)
+        {
+            string params_string = String.Empty;
+            int dl_len = dut_list.Count;
+            Dutyara counter;
+            for (int iterator = 0; iterator < dl_len; iterator++)
+            {
+                counter = dut_list[iterator];
+                params_string += ViaDataFormater.GenerateString(counter, iterator);
+            }
+            params_string = params_string.Remove(params_string.Length - 1);
+            //MessageBox.Show(params_string);
+            Console.WriteLine(params_string);
+            SendDutData(params_string, ref _mmc);
+        }
+
+        static void SendDutData(string ips_params, ref MessagesCommunicator _mmc)
+        {
+            bool gg = false;
+            string t_msg = "#D#171120;164227;;;;;;;;;;;;;;";
+            t_msg += ips_params;
+            //var text = this.tbSendRaw.Text.Trim();
+            //this.tbSendRaw.Focus();
+            //this.tbSendRaw.SelectAll();
+            if (gg == true)
+            {
+                var msg = WialonIPS.Message.Parse(t_msg);
+                if (msg.Success)
+                {
+                    mmcc.Send(msg);
+                    MessageBox.Show(t_msg);
+                }
+                else
+                {
+                    // this.Log.PostHead("Emulator", "Unknown packet not sent: " + t_msg);
+                    System.Media.SystemSounds.Exclamation.Play();
+                }
+            }
+            
+        }
+
+
+
+        // =========================================================================================================
+
+
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
         {

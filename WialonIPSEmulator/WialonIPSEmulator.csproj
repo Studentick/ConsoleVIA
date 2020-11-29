@@ -84,6 +84,7 @@
     <Compile Include="DevicesConfigForm.Designer.cs">
       <DependentUpon>DevicesConfigForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dutyara.cs" />
     <Compile Include="HasK.Data.cs" />
     <Compile Include="HasK.Net.cs" />
     <Compile Include="IOPanel.cs">
@@ -150,6 +151,7 @@
     <Compile Include="SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ViaDataFormater.cs" />
     <Compile Include="VirtualDUT.cs" />
     <Compile Include="WialonIPS.cs" />
   </ItemGroup>

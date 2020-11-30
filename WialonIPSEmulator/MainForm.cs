@@ -61,8 +61,8 @@ namespace WialonIPSEmulator
         static int dut_selected = 0;
         static string dut_data = "";
         public static int? message_status = null;
-        static int request_time = 25000;
-        static int time_to_dut_read = 15000;
+        static int request_time = 15000;
+        static int time_to_dut_read = 5000;
         public const int MSG_SUCCESS = 1, MSG_FAIL = 0, MSG_DROP = -1, PORT_DROP = -2;
         const string FAIL_VALUE = "65536" /*Не верный формат данных*/, DROP_VALUE = "65533" /*Часть данных была потеряна*/,
             PORT_VALUE = "65530" /*Ошибка COM-порта*/;
@@ -103,7 +103,7 @@ namespace WialonIPSEmulator
 
             Dutyara.GetPorts();
             dut_list.Add(new Dutyara(33722, 9600));
-            dut_list.Add(new Dutyara(22733, 9600));
+            // dut_list.Add(new Dutyara(22733, 9600));
             //mmcc = _mc;
             //DutControl(_mc);
             
@@ -1055,7 +1055,7 @@ namespace WialonIPSEmulator
                         GoToNextDut(ref _mc);
                     }
                     else dut_data = dut_list[dut_selected].GetData();
-                    Thread.Sleep(50);
+                    Thread.Sleep(100);
                 }
 
             }
@@ -1256,7 +1256,8 @@ namespace WialonIPSEmulator
         {
             bool gg = true;
             // Тут работа кипит
-            string t_msg = "#D#171120;164227;;;;;;;;;;;;;;";
+            var l_dt = MyParseDateTime(DateTime.Now);
+            string t_msg = "#D#"+ l_dt[0] + ";"+ l_dt[1] + ";;;;;;;;;;;;;;";
             t_msg += ips_params;
             //var text = this.tbSendRaw.Text.Trim();
             //this.tbSendRaw.Focus();
@@ -1267,7 +1268,7 @@ namespace WialonIPSEmulator
                 if (msg.Success)
                 {
                     _mmc.Send(msg);
-                    MessageBox.Show(t_msg);
+                    // MessageBox.Show(t_msg);
                 }
                 else
                 {

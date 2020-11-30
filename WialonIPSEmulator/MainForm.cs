@@ -52,8 +52,8 @@ namespace WialonIPSEmulator
         public AddToTextBoxDelegate AddToLog, AddToMessages;
         public CLog Log;
         public CSettings Settings { get; private set; }
-        // =========================================================================================================
-        //Переменные для работы с дутами
+        /// =========================================================================================================
+        ///Переменные для работы с дутами
         static Stopwatch sw_timeout = new Stopwatch(); // Для проверки потраченного времени на опрос ДУТа
         static Stopwatch sw_request = new Stopwatch(); // Для проверки необходимости повторного опроса ДУТов
         static bool need_request = true;
@@ -75,8 +75,16 @@ namespace WialonIPSEmulator
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool FreeConsole();
+        /// =========================================================================================================
 
-        // =========================================================================================================
+
+
+        //// =========================================================================================================
+        // Переменные для работы сервером виалоновстким 
+
+        public static List<WialonIPS.Message> black_box = new List<WialonIPS.Message>();
+
+        //// =========================================================================================================
         public MainForm()
         {
             InitializeComponent();
@@ -1265,9 +1273,31 @@ namespace WialonIPSEmulator
             if (gg == true)
             {
                 var msg = WialonIPS.Message.Parse(t_msg);
+                var vv = msg.GetType();
                 if (msg.Success)
                 {
-                    _mmc.Send(msg);
+                    bool conn = false;
+                    if (_mmc != null)
+                    {
+                        conn = _mmc.IsConnected;
+                    }
+                    if (conn)
+                    {
+                        _mmc.Send(msg);
+                        if(black_box.Count > 0)
+                        {
+                            foreach (var item in black_box)
+                            {
+                                Thread.Sleep(10); // A nado?
+                                _mmc.Send(item);
+                            }
+                            black_box.Clear();
+                        }
+                    }
+                    else
+                    {
+                        black_box.Add(msg);
+                    }
                     // MessageBox.Show(t_msg);
                 }
                 else

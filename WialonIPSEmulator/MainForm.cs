@@ -1250,6 +1250,7 @@ namespace WialonIPSEmulator
             //MessageBox.Show(params_string);
             Console.WriteLine(params_string);
             SendDutData(params_string, ref _mmc);
+            ewfewf
         }
 
         static void SendDutData(string ips_params, ref MessagesCommunicator _mmc)

@@ -968,7 +968,7 @@
             // tmrDutControl
             // 
             this.tmrDutControl.Enabled = true;
-            this.tmrDutControl.Interval = 20000;
+            this.tmrDutControl.Interval = 30000;
             this.tmrDutControl.Tick += new System.EventHandler(this.tmrDutControl_Tick);
             // 
             // MainForm

@@ -82,7 +82,7 @@ namespace WialonIPSEmulator
         //// =========================================================================================================
         // Переменные для работы сервером виалоновстким 
 
-        public static List<string> black_box = new List<string>();
+        public static List<WialonIPS.Message> black_box = new List<WialonIPS.Message>();
 
         //// =========================================================================================================
         public MainForm()
@@ -1262,24 +1262,7 @@ namespace WialonIPSEmulator
             params_string = params_string.Remove(params_string.Length - 1);
             //MessageBox.Show(params_string);
             Console.WriteLine(params_string);
-            //bool conn = false;
-            //if (_mmc != null)
-            //{
-            //    conn = _mmc.IsConnected;
-            //}
-            //if (conn)
-            //{
-                SendDutData(params_string, ref _mmc);
-            //    foreach(var iterator in black_box)
-            //    {
-            //        SendDutData(iterator, ref _mmc);
-            //    }
-            //    black_box.Clear();
-            //}
-            //else
-            //{
-            //    black_box.Add(params_string);
-            //}
+            SendDutData(params_string, ref _mmc);
         }
 
         static void SendDutData(string ips_params, ref MessagesCommunicator _mmc)
@@ -1298,7 +1281,30 @@ namespace WialonIPSEmulator
                 var vv = msg.GetType();
                 if (msg.Success)
                 {
+                    bool conn = false;
+                    if (_mmc != null)
+                    {
+                        conn = _mmc.IsConnected;
+                    }
+                    
+                    if (conn)
+                    {
                         _mmc.Send(msg);
+                        if(black_box.Count > 0)
+                        {
+                            foreach (var item in black_box)
+                            {
+                                Thread.Sleep(10); // A nado?
+                                _mmc.Send(item);
+                            }
+                            black_box.Clear();
+                        }
+                    }
+                    else
+                    {
+                        black_box.Add(msg);
+                    }
+                    // MessageBox.Show(t_msg);
                 }
                 else
                 {

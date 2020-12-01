@@ -391,11 +391,16 @@ namespace WialonIPSEmulator
 
         void _mc_OnSent(MessagesCommunicator comm, WialonIPS.Message msg)
         {
-            this.Log.PostHead("<<<", msg.ToString());
-            if (msg.MsgType == MessageType.Message)
-                this.Messages.Sent((msg as WialonIPS.MessageMessage).Text);
-            if (this.Settings.SendPingPackets)
-                this.tmrPing.Change(this._ping_interval, this._ping_interval);
+            try
+            {
+                this.Log.PostHead("<<<", msg.ToString());
+                if (msg.MsgType == MessageType.Message)
+                    this.Messages.Sent((msg as WialonIPS.MessageMessage).Text);
+                if (this.Settings.SendPingPackets)
+                    this.tmrPing.Change(this._ping_interval, this._ping_interval);
+            }
+            catch(Exception ex)
+            { }
         }
 
         void _mc_OnReceive(MessagesCommunicator comm, WialonIPS.Message msg)
@@ -1281,6 +1286,7 @@ namespace WialonIPSEmulator
                     {
                         conn = _mmc.IsConnected;
                     }
+                    
                     if (conn)
                     {
                         _mmc.Send(msg);

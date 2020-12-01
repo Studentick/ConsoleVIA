@@ -62,7 +62,7 @@ namespace WialonIPS
         void _client_OnSent(TCPClient client, int sent)
         {
             if (this.OnSent != null) this.OnSent(this, this._last_sent_message);
-            this._last_sent_message = null;
+            this._last_sent_message = null; // Наверное тут собака порылась
         }
 
         void _client_OnError(TCPClient client, System.Net.Sockets.SocketException exc)

@@ -995,7 +995,7 @@ namespace WialonIPSEmulator
         // Функции для работы сдутами
         private void btnOnOffRequest_Click(object sender, EventArgs e)
         {
-            SendDutData("33722N0=+210=01345.27=00632.55=094", ref _mc);
+            SendDutData("ee", ref _mc);
         }
 
         private void tmrDutControl_Tick(object sender, EventArgs e)
@@ -1264,9 +1264,8 @@ namespace WialonIPSEmulator
         {
             bool gg = true;
             // Тут работа кипит
-            var l_dt = MyParseDateTime(DateTime.Now.ToUniversalTime());
-            //string t_msg = "#D#"+ l_dt[0] + ";"+ l_dt[1] + ";;;;;;;;;;;;;;";
-            string t_msg = "#D#" + DateTime.Now.ToUniversalTime().ToString("ddMMyy;HHmmss") + ";;;;;;;;;;;;;;";
+            var l_dt = MyParseDateTime(DateTime.Now);
+            string t_msg = "#D#"+ l_dt[0] + ";"+ l_dt[1] + ";;;;;;;;;;;;;;";
             t_msg += ips_params;
             //var text = this.tbSendRaw.Text.Trim();
             //this.tbSendRaw.Focus();
@@ -1277,7 +1276,29 @@ namespace WialonIPSEmulator
                 var vv = msg.GetType();
                 if (msg.Success)
                 {
-                    _mmc.Send(msg);
+                    bool conn = false;
+                    if (_mmc != null)
+                    {
+                        conn = _mmc.IsConnected;
+                    }
+                    if (conn)
+                    {
+                        _mmc.Send(msg);
+                        if(black_box.Count > 0)
+                        {
+                            foreach (var item in black_box)
+                            {
+                                Thread.Sleep(10); // A nado?
+                                _mmc.Send(item);
+                            }
+                            black_box.Clear();
+                        }
+                    }
+                    else
+                    {
+                        black_box.Add(msg);
+                    }
+                    // MessageBox.Show(t_msg);
                 }
                 else
                 {

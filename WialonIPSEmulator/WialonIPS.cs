@@ -668,7 +668,6 @@ namespace WialonIPS
         {
             res.Append(this._time.ToString("ddMMyy;HHmmss"));
             res.Append(";");
-            string ttt = this._time.ToString("ddMMyy;HHmmss");
             if (this._lat.HasValue)
             {
                 res.Append(CalcCoordValue(this._lat.Value, false).Replace(',', '.'));

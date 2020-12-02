@@ -607,6 +607,7 @@
             this.btnSendData.Name = "btnSendData";
             this.btnSendData.Size = new System.Drawing.Size(75, 23);
             this.btnSendData.TabIndex = 1;
+            this.btnSendData.TabStop = false;
             this.btnSendData.Text = "Send now";
             this.btnSendData.UseVisualStyleBackColor = true;
             this.btnSendData.Click += new System.EventHandler(this.btnSendData_Click);
@@ -968,7 +969,7 @@
             // tmrDutControl
             // 
             this.tmrDutControl.Enabled = true;
-            this.tmrDutControl.Interval = 30000;
+            this.tmrDutControl.Interval = 10000;
             this.tmrDutControl.Tick += new System.EventHandler(this.tmrDutControl_Tick);
             // 
             // MainForm

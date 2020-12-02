@@ -82,7 +82,7 @@ namespace WialonIPSEmulator
         //// =========================================================================================================
         // Переменные для работы сервером виалоновстким 
 
-        public static List<WialonIPS.Message> black_box = new List<WialonIPS.Message>();
+        public static List<string> black_box = new List<string>();
 
         //// =========================================================================================================
         public MainForm()
@@ -391,20 +391,20 @@ namespace WialonIPSEmulator
 
         void _mc_OnSent(MessagesCommunicator comm, WialonIPS.Message msg)
         {
-            this.Log.PostHead("<<<", msg.ToString());
-            if (msg.MsgType == MessageType.Message)
-                this.Messages.Sent((msg as WialonIPS.MessageMessage).Text);
-            if (this.Settings.SendPingPackets)
-                this.tmrPing.Change(this._ping_interval, this._ping_interval);
+            //this.Log.PostHead("<<<", msg.ToString());
+            //if (msg.MsgType == MessageType.Message)
+            //    this.Messages.Sent((msg as WialonIPS.MessageMessage).Text);
+            //if (this.Settings.SendPingPackets)
+            //    this.tmrPing.Change(this._ping_interval, this._ping_interval);
         }
 
         void _mc_OnReceive(MessagesCommunicator comm, WialonIPS.Message msg)
         {
-            this.Log.PostHead(">>>", msg.ToString());
-            if (msg.MsgType == MessageType.Message)
-                this.Messages.Received((msg as WialonIPS.MessageMessage).Text);
-            if (msg.MsgType == MessageType.LoginAns && !(msg as LoginAnsMessage).Success)
-                Disconnect();
+            //this.Log.PostHead(">>>", msg.ToString());
+            //if (msg.MsgType == MessageType.Message)
+            //    this.Messages.Received((msg as WialonIPS.MessageMessage).Text);
+            //if (msg.MsgType == MessageType.LoginAns && !(msg as LoginAnsMessage).Success)
+            //    Disconnect();
         }
 
         void _mc_OnDisconnect(MessagesCommunicator comm)
@@ -995,7 +995,7 @@ namespace WialonIPSEmulator
         // Функции для работы сдутами
         private void btnOnOffRequest_Click(object sender, EventArgs e)
         {
-            SendDutData("33722N0=+210=01345.27=00632.55=094", ref _mc);
+            //SendDutData("33722N0=+210=01345.27=00632.55=094", ref _mc);
         }
 
         private void tmrDutControl_Tick(object sender, EventArgs e)
@@ -1256,36 +1256,69 @@ namespace WialonIPSEmulator
             }
             params_string = params_string.Remove(params_string.Length - 1);
             //MessageBox.Show(params_string);
-            Console.WriteLine(params_string);
-            SendDutData(params_string, ref _mmc);
+            SendDutData(params_string, _mmc);
+            Thread.Sleep(1000);
+            SendDutData(params_string, _mmc);
+            Thread.Sleep(1000);
+            SendDutData(params_string, _mmc);
+            Thread.Sleep(1000);
+            //bool conn = false;
+            //if (_mmc != null)
+            //{
+            //    conn = _mmc.IsConnected;
+            //}
+            //if (conn)
+            //{
+            //    black_box.Add(params_string);
+            //    if (black_box.Count > 0)
+            //    {
+            //        foreach (var item in black_box)
+            //        {
+            //            Console.WriteLine(item);
+            //            SendDutData(item, ref _mmc);
+            //            Thread.Sleep(100); // A nado?
+            //        }
+            //        black_box.Clear();
+            //    }
+            //}
+            //else
+            //{
+            //    black_box.Add(params_string);
+            //    Console.WriteLine("Add");
+            //}
+
         }
 
-        static void SendDutData(string ips_params, ref MessagesCommunicator _mmc)
+        async static void SendDutData(string ips_params, MessagesCommunicator _mmc)
         {
-            bool gg = true;
-            // Тут работа кипит
-            var l_dt = MyParseDateTime(DateTime.Now.ToUniversalTime());
-            //string t_msg = "#D#"+ l_dt[0] + ";"+ l_dt[1] + ";;;;;;;;;;;;;;";
-            string t_msg = "#D#" + DateTime.Now.ToUniversalTime().ToString("ddMMyy;HHmmss") + ";;;;;;;;;;;;;;";
-            t_msg += ips_params;
-            //var text = this.tbSendRaw.Text.Trim();
-            //this.tbSendRaw.Focus();
-            //this.tbSendRaw.SelectAll();
-            if (gg == true)
-            {
-                var msg = WialonIPS.Message.Parse(t_msg);
-                var vv = msg.GetType();
-                if (msg.Success)
-                {
-                    _mmc.Send(msg);
-                }
-                else
-                {
-                    // this.Log.PostHead("Emulator", "Unknown packet not sent: " + t_msg);
-                    System.Media.SystemSounds.Exclamation.Play();
-                }
-            }
-            
+            await Task.Run(() =>
+           {
+               bool gg = true;
+                // Тут работа кипит
+                var l_dt = MyParseDateTime(DateTime.Now.ToUniversalTime());
+                //string t_msg = "#D#"+ l_dt[0] + ";"+ l_dt[1] + ";;;;;;;;;;;;;;";
+                string t_msg = "#D#" + DateTime.Now.ToUniversalTime().ToString("ddMMyy;HHmmss") + ";;;;;;;;;;;;;;";
+               t_msg += ips_params;
+                //var text = this.tbSendRaw.Text.Trim();
+                //this.tbSendRaw.Focus();
+                //this.tbSendRaw.SelectAll();
+                if (gg == true)
+               {
+                   var msg = WialonIPS.Message.Parse(t_msg);
+                   var vv = msg.GetType();
+                   if (msg.Success)
+                   {
+                       _mmc.Send(msg);
+                   }
+                   else
+                   {
+                        // this.Log.PostHead("Emulator", "Unknown packet not sent: " + t_msg);
+                        System.Media.SystemSounds.Exclamation.Play();
+                   }
+               }
+               Thread.Sleep(100);
+           }
+            );
         }
 
         // Получение текущей даты для пакетов.

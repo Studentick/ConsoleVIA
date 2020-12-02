@@ -83,11 +83,13 @@ namespace WialonIPSEmulator
         // Переменные для работы сервером виалоновстким 
 
         public static List<string> black_box = new List<string>();
+        public static System.Windows.Forms.Timer timer_stopper; 
 
         //// =========================================================================================================
         public MainForm()
         {
             InitializeComponent();
+            timer_stopper = this.tmrDutControl;
             this.AddToLog = new AddToTextBoxDelegate(this.AddToLogMethod);
             this.AddToMessages = new AddToTextBoxDelegate(this.AddToMessagesMethod);
             this.Log = new CLog(this.tbLog, this.AddToLog);
@@ -996,6 +998,7 @@ namespace WialonIPSEmulator
         private void btnOnOffRequest_Click(object sender, EventArgs e)
         {
             //SendDutData("33722N0=+210=01345.27=00632.55=094", ref _mc);
+            timer_stopper.Enabled = true;
         }
 
         private void tmrDutControl_Tick(object sender, EventArgs e)
@@ -1064,6 +1067,7 @@ namespace WialonIPSEmulator
                     }
                     else dut_data = dut_list[dut_selected].GetData();
                     Thread.Sleep(100);
+                    var rr = timer_stopper.Enabled;
                 }
 
             }
@@ -1256,36 +1260,40 @@ namespace WialonIPSEmulator
             }
             params_string = params_string.Remove(params_string.Length - 1);
             //MessageBox.Show(params_string);
-            SendDutData(params_string, _mmc);
-            Thread.Sleep(1000);
-            SendDutData(params_string, _mmc);
-            Thread.Sleep(1000);
-            SendDutData(params_string, _mmc);
-            Thread.Sleep(1000);
-            //bool conn = false;
-            //if (_mmc != null)
-            //{
-            //    conn = _mmc.IsConnected;
-            //}
-            //if (conn)
-            //{
-            //    black_box.Add(params_string);
-            //    if (black_box.Count > 0)
-            //    {
-            //        foreach (var item in black_box)
-            //        {
-            //            Console.WriteLine(item);
-            //            SendDutData(item, ref _mmc);
-            //            Thread.Sleep(100); // A nado?
-            //        }
-            //        black_box.Clear();
-            //    }
-            //}
-            //else
-            //{
-            //    black_box.Add(params_string);
-            //    Console.WriteLine("Add");
-            //}
+            //SendDutData(params_string, _mmc);
+            //Thread.Sleep(1000);
+            //SendDutData(params_string, _mmc);
+            //Thread.Sleep(1000);
+            //SendDutData(params_string, _mmc);
+            //Thread.Sleep(1000);
+            bool conn = false;
+            
+            if (_mmc != null)
+            {
+                conn = _mmc.IsConnected;
+            }
+            if (conn)
+            {
+                timer_stopper.Enabled = false;
+                black_box.Add(params_string);
+                if (black_box.Count > 0)
+                {
+                    timer_stopper.Stop();
+                    foreach (var item in black_box)
+                    {
+                        Console.WriteLine(item);
+                        SendDutData(item, _mmc);
+                        Thread.Sleep(1000); // A nado?
+                    }
+                    black_box.Clear();
+                    timer_stopper.Start();
+                }
+            }
+            else
+            {
+                black_box.Add(params_string);
+                Console.WriteLine("Add");
+            }
 
         }
 

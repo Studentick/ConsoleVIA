@@ -396,17 +396,17 @@ namespace WialonIPSEmulator
             //this.Log.PostHead("<<<", msg.ToString());
             //if (msg.MsgType == MessageType.Message)
             //    this.Messages.Sent((msg as WialonIPS.MessageMessage).Text);
-            //if (this.Settings.SendPingPackets)
-            //    this.tmrPing.Change(this._ping_interval, this._ping_interval);
+            if (this.Settings.SendPingPackets)
+                this.tmrPing.Change(this._ping_interval, this._ping_interval);
         }
 
         void _mc_OnReceive(MessagesCommunicator comm, WialonIPS.Message msg)
         {
-            //this.Log.PostHead(">>>", msg.ToString());
-            //if (msg.MsgType == MessageType.Message)
-            //    this.Messages.Received((msg as WialonIPS.MessageMessage).Text);
-            //if (msg.MsgType == MessageType.LoginAns && !(msg as LoginAnsMessage).Success)
-            //    Disconnect();
+            this.Log.PostHead(">>>", msg.ToString());
+            if (msg.MsgType == MessageType.Message)
+                this.Messages.Received((msg as WialonIPS.MessageMessage).Text);
+            if (msg.MsgType == MessageType.LoginAns && !(msg as LoginAnsMessage).Success)
+                Disconnect();
         }
 
         void _mc_OnDisconnect(MessagesCommunicator comm)
@@ -1161,6 +1161,20 @@ namespace WialonIPSEmulator
             );
         }
 
+        private void autoConnect_Tick(object sender, EventArgs e)
+        {
+            bool conn = false;
+
+            if (this._mc == null || !this._mc.IsConnected)
+            {
+                this.ConnectClick();
+            }
+            else
+                Console.WriteLine("Jopa");
+
+            //bool bb =this._mc.IsConnected;
+        }
+
 
         // Проверка полученных данных от ДУТа
         // в случае, если данные дошли в целосности - отправляет их получателю
@@ -1275,10 +1289,37 @@ namespace WialonIPSEmulator
             if (conn)
             {
                 timer_stopper.Enabled = false;
+                var gg = timer_stopper.Interval;
                 black_box.Add(params_string);
                 if (black_box.Count > 0)
                 {
+                    int ts = timer_stopper.Interval / 1000;
                     timer_stopper.Stop();
+
+                    //int step = 1;
+
+                    //if (black_box.Count > ts + ts*20/100)
+                    //{
+                    //    step*=2;
+                    //    if (black_box.Count > 2*(ts + ts * 20 / 100))
+                    //    {
+                    //        step *= 2;
+                    //        if (black_box.Count > 4 * (ts + ts * 20 / 100))
+                    //        {
+                    //            step *= 2;
+                    //            if (black_box.Count > 8 * (ts + ts * 20 / 100))
+                    //            {
+                    //                step *= 2;
+                    //            }
+                    //        }
+                    //    }
+                    //}
+                    //for (int iterator = 0; iterator < black_box.Count; iterator += step)
+                    //{
+                    //    Console.WriteLine(black_box[iterator]);
+                    //    SendDutData(black_box[iterator], _mmc);
+                    //    Thread.Sleep(1000); // A nado?
+                    //}
                     foreach (var item in black_box)
                     {
                         Console.WriteLine(item);

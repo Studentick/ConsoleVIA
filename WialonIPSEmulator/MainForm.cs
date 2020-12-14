@@ -994,7 +994,7 @@ namespace WialonIPSEmulator
 
 
         // =========================================================================================================
-        // Функции для работы сдутами
+        // Функции для работы с дутами
         private void btnOnOffRequest_Click(object sender, EventArgs e)
         {
             //SendDutData("33722N0=+210=01345.27=00632.55=094", ref _mc);
